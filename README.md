@@ -70,7 +70,7 @@ PoolSafe takes the **age-old concept of community risk-sharing** and puts it on-
 | **Wallet**      | Freighter Wallet                    | Stellar wallet connection and tx signing      |
 | **State**       | Zustand                             | Lightweight client-side state management      |
 | **Blockchain**  | Stellar (Soroban)                   | Smart contract platform for on-chain logic    |
-| **Contracts**   | Rust (Soroban SDK)                  | Five modular smart contracts                  |
+| **Contracts**   | Rust (Soroban SDK)                  | Seven modular smart contracts                 |
 | **SDK**         | @stellar/stellar-sdk                | JavaScript SDK for Stellar/Soroban interaction|
 
 ---
@@ -122,7 +122,8 @@ PoolSafe/
 │   │   │   ├── usePools.ts            # Pool CRUD operations
 │   │   │   ├── useClaims.ts           # Claim management
 │   │   │   ├── useVoting.ts           # Vote submission & results
-│   │   │   └── useSoroban.ts          # Generic Soroban contract calls
+│   │   │   ├── useSoroban.ts          # Generic Soroban contract calls
+│   │   │   └── useSmartAccount.ts     # Smart account automation hook
 │   │   ├── lib/                        # Core libraries
 │   │   │   ├── stellar.ts             # Stellar SDK configuration
 │   │   │   ├── soroban.ts             # Soroban client helpers
@@ -131,12 +132,14 @@ PoolSafe/
 │   │   │   ├── api.ts                 # Base API client (fetch wrapper)
 │   │   │   ├── pool.service.ts
 │   │   │   ├── claim.service.ts
-│   │   │   └── vote.service.ts
+│   │   │   ├── vote.service.ts
+│   │   │   └── smart-account.service.ts  # Smart account contract calls
 │   │   ├── types/                      # Shared TypeScript types
 │   │   │   ├── pool.types.ts
 │   │   │   ├── claim.types.ts
 │   │   │   ├── vote.types.ts
 │   │   │   ├── user.types.ts
+│   │   │   ├── smart-account.types.ts
 │   │   │   └── index.ts
 │   │   ├── context/                    # React context providers
 │   │   │   ├── WalletContext.tsx
@@ -162,7 +165,13 @@ PoolSafe/
         ├── governance/                 # Pool parameter governance
         │   ├── Cargo.toml
         │   └── src/lib.rs
-        └── token/                      # Contribution tracking token
+        ├── token/                      # Contribution tracking token
+        │   ├── Cargo.toml
+        │   └── src/lib.rs
+        ├── payout/                     # Automated payouts
+        │   ├── Cargo.toml
+        │   └── src/lib.rs
+        └── smart_account/             # Smart account automation
             ├── Cargo.toml
             └── src/lib.rs
 ```
