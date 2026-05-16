@@ -1,8 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import formidable, { type File } from "formidable";
 import fs from "fs";
+import { requireX402Payment, verifyPayment } from "../../../lib/server/x402";
 
 export const config = { api: { bodyParser: false } };
+
+// 0.005 USDC = 50000 stroops (assuming 7 decimal places)
+const IPFS_UPLOAD_COST = "50000";
 
 const PINATA_API_BASE = "https://api.pinata.cloud";
 
@@ -16,6 +20,30 @@ export default async function handler(
 ) {
   if (req.method !== "POST") {
     return res.status(405).json({ success: false, error: "Method not allowed" });
+  }
+
+  // Check for x402 payment
+  const paymentCheck = requireX402Payment(
+    req,
+    res,
+    IPFS_UPLOAD_COST,
+    "IPFS evidence upload (cost recovery)"
+  );
+  
+  if (!paymentCheck.valid) {
+    return; // Response already sent by requireX402Payment
+  }
+  
+  // Verify the payment is valid
+  if (paymentCheck.proof) {
+    const verification = await verifyPayment(paymentCheck.proof, IPFS_UPLOAD_COST);
+    if (!verification.valid) {
+      return res.status(402).json({
+        success: false,
+        error: "Payment verification failed",
+        details: verification.error,
+      });
+    }
   }
 
   const stellarAddress = req.headers["x-stellar-address"] as string;

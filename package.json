@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "@x402/core": "^2.12.0",
+    "@x402/express": "^2.12.0",
+    "@x402/stellar": "^2.12.0"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.3"
+  }
+}

@@ -3,6 +3,8 @@
  * All endpoints are Next.js API routes at /api/* (same origin — no external backend needed).
  */
 
+import { parsePaymentRequirement, createPayment } from "./x402-client";
+
 const BASE = "";
 
 type ApiResponse<T> = {
@@ -43,23 +45,69 @@ export type UploadResult = {
   size?: number;
 };
 
-/** Upload evidence file to IPFS via the backend proxy. */
+/** Upload evidence file to IPFS via the backend proxy.
+ * Handles x402 payment requirement automatically.
+ */
 export async function uploadEvidenceFile(
   file: File,
   stellarAddress: string,
   poolAddress?: string,
-  claimId?: number
+  claimId?: number,
+  onPaymentRequired?: (amount: string) => void
 ): Promise<UploadResult> {
   const form = new FormData();
   form.append("file", file);
   if (poolAddress) form.append("poolId", poolAddress);
   if (claimId !== undefined) form.append("claimId", String(claimId));
 
-  return request<UploadResult>("/api/ipfs/upload", {
+  // First attempt
+  let res = await fetch(`${BASE}/api/ipfs/upload`, {
     method: "POST",
     body: form,
-    stellarAddress,
+    headers: { "x-stellar-address": stellarAddress },
   });
+
+  // Handle x402 payment required
+  if (res.status === 402) {
+    const requirement = await parsePaymentRequirement(res);
+    if (!requirement) {
+      throw new Error("IPFS upload requires payment but no valid x402 requirement found");
+    }
+    
+    onPaymentRequired?.(requirement.amount);
+    
+    // Create payment proof
+    const proof = await createPayment(requirement);
+    
+    // Retry with payment proof
+    // Need to recreate FormData since it was consumed
+    const formRetry = new FormData();
+    formRetry.append("file", file);
+    if (poolAddress) formRetry.append("poolId", poolAddress);
+    if (claimId !== undefined) formRetry.append("claimId", String(claimId));
+    
+    res = await fetch(`${BASE}/api/ipfs/upload`, {
+      method: "POST",
+      body: formRetry,
+      headers: {
+        "x-stellar-address": stellarAddress,
+        "x-payment-proof": JSON.stringify(proof),
+      },
+    });
+  }
+
+  if (!res.ok) {
+    let msg = res.statusText;
+    try {
+      const body = await res.json();
+      msg = body?.error ?? body?.message ?? msg;
+    } catch {}
+    throw new Error(msg);
+  }
+  
+  const body: ApiResponse<UploadResult> = await res.json();
+  if (!body.success) throw new Error("API returned success=false");
+  return body.data;
 }
 
 /** Upload JSON metadata to IPFS (used for pool creation). */
