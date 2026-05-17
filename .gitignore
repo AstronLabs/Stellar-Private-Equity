@@ -34,3 +34,5 @@ coverage/
 .agents
 .codex
 .vscode
+.vercel
+.env*.local

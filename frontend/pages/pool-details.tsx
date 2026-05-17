@@ -6,9 +6,10 @@ import { FigmaPage } from "../components/FigmaPage";
 import { Header } from "../components/header";
 import { Footer } from "../components/footer";
 import { useWallet } from "../context/WalletContext";
-import { pool, type PoolSummary, type Claim as ClaimType } from "../lib/contracts";
+import { pool, smartAccount, type PoolSummary, type Claim as ClaimType } from "../lib/contracts";
 import { PoolPhase } from "../lib/contracts/types";
-import { fromStroops, shortenAddress } from "../lib/contracts/config";
+import { fromStroops, shortenAddress, CONTRACTS } from "../lib/contracts/config";
+import { callContract, addressToScVal, i128ToScVal, u32ToScVal } from "../lib/contracts/soroban";
 
 type Tab = "overview" | "members" | "claims";
 
@@ -25,6 +26,10 @@ export default function PoolDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
   const [paying, setPaying] = useState(false);
+  const [showPayModal, setShowPayModal] = useState(false);
+  const [payMode, setPayMode] = useState<"once" | "auto">("once");
+  const [recurringId, setRecurringId] = useState<bigint | null>(null);
+  const [approvingAllowance, setApprovingAllowance] = useState(false);
   const [isMemberSigner, setIsMemberSigner] = useState(false);
   const [isMemberActiveState, setIsMemberActiveState] = useState(true);
   const [signers, setSigners] = useState<string[]>([]);
@@ -83,10 +88,11 @@ export default function PoolDetailsPage() {
     }
   }
 
-  async function handlePayContribution() {
+  async function handlePayOnce() {
     if (!isConnected) { await connect(); return; }
     setPaying(true);
     setStatus("");
+    setShowPayModal(false);
     try {
       const cycle = summary?.currentCycle ?? 0;
       await pool.payContribution(poolAddress, address, cycle);
@@ -98,6 +104,50 @@ export default function PoolDetailsPage() {
     } finally {
       setPaying(false);
     }
+  }
+
+  async function handleSetupAutoPay() {
+    if (!isConnected) { await connect(); return; }
+    setApprovingAllowance(true);
+    setShowPayModal(false);
+    setStatus("Step 1/2: Approving smart account allowance...");
+    try {
+      const amount = summary?.contributionAmount ?? BigInt(0);
+      const maxAllowance = amount * BigInt(120); // 10 years of monthly payments
+      const expirationLedger = 999999999; // far future
+      await callContract({
+        contractId: CONTRACTS.usdc,
+        method: "approve",
+        args: [
+          addressToScVal(address),
+          addressToScVal(CONTRACTS.smartAccount),
+          i128ToScVal(maxAllowance),
+          u32ToScVal(expirationLedger),
+        ],
+        sourceAddress: address,
+        submit: true,
+      });
+      setStatus("Step 2/2: Setting up recurring payment...");
+      const id = await smartAccount.createRecurring(
+        address,
+        poolAddress,
+        CONTRACTS.usdc,
+        amount,
+        "Monthly",
+        BigInt(0)
+      );
+      setRecurringId(id);
+      setStatus(`Auto-pay enabled! Recurring payment #${id} created. Contributions will be paid automatically each month.`);
+    } catch (e) {
+      setStatus(e instanceof Error ? e.message : "Failed to set up auto-pay");
+    } finally {
+      setApprovingAllowance(false);
+    }
+  }
+
+  function handlePayContribution() {
+    if (!isConnected) { connect(); return; }
+    setShowPayModal(true);
   }
 
   function claimStatusDot(s: string) {
@@ -411,16 +461,83 @@ export default function PoolDetailsPage() {
                     <p className="font-body-sm text-body-sm mb-lg opacity-80">
                       Monthly contribution: {summary ? `${fromStroops(summary.contributionAmount).toFixed(2)} USDC` : "—"} · Cycle #{summary?.currentCycle ?? 0}
                     </p>
+                    {/* Auto-pay status badge */}
+                    {recurringId !== null && (
+                      <div className="flex items-center gap-xs mb-sm text-sm bg-secondary/20 rounded-lg px-sm py-xs">
+                        <span className="material-symbols-outlined text-[16px] text-secondary">autorenew</span>
+                        <span className="text-secondary font-medium">Auto-pay active (#{recurringId.toString()})</span>
+                      </div>
+                    )}
+
                     <div className="flex flex-col gap-sm">
                       {summary?.phase === PoolPhase.Active && (
                         <button
                           onClick={handlePayContribution}
-                          disabled={paying || !isMemberActiveState}
+                          disabled={paying || approvingAllowance || !isMemberActiveState}
                           className="w-full bg-on-primary/15 border border-on-primary/40 text-on-primary py-md rounded-lg font-bold hover:bg-on-primary/25 transition-all disabled:opacity-40 flex items-center justify-center gap-sm"
                         >
-                          <span className="material-symbols-outlined text-[20px]">payments</span>
-                          {paying ? "Processing..." : "Pay Monthly Contribution"}
+                          <span className="material-symbols-outlined text-[20px]">{recurringId !== null ? "autorenew" : "payments"}</span>
+                          {paying || approvingAllowance ? "Processing..." : recurringId !== null ? "Auto-pay Enabled" : "Pay Monthly Contribution"}
                         </button>
+                      )}
+
+                      {/* Pay contribution modal */}
+                      {showPayModal && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+                          <div className="bg-surface-container border border-outline/20 rounded-2xl p-xl w-full max-w-sm mx-md shadow-2xl">
+                            <h3 className="font-headline-sm text-headline-sm mb-xs">Monthly Contribution</h3>
+                            <p className="font-body-sm text-body-sm opacity-70 mb-lg">
+                              {summary ? `${fromStroops(summary.contributionAmount).toFixed(2)} USDC` : "—"} · Cycle #{summary?.currentCycle ?? 0}
+                            </p>
+
+                            <div className="flex flex-col gap-sm mb-lg">
+                              <button
+                                onClick={() => setPayMode("once")}
+                                className={`w-full flex items-start gap-md p-md rounded-xl border transition-all ${
+                                  payMode === "once"
+                                    ? "border-secondary bg-secondary/10"
+                                    : "border-outline/30 hover:border-outline/60"
+                                }`}
+                              >
+                                <span className="material-symbols-outlined text-[22px] mt-[2px] shrink-0">payments</span>
+                                <div className="text-left">
+                                  <p className="font-bold text-sm">Pay Once</p>
+                                  <p className="text-xs opacity-60">Sign a single payment now via Freighter</p>
+                                </div>
+                              </button>
+
+                              <button
+                                onClick={() => setPayMode("auto")}
+                                className={`w-full flex items-start gap-md p-md rounded-xl border transition-all ${
+                                  payMode === "auto"
+                                    ? "border-secondary bg-secondary/10"
+                                    : "border-outline/30 hover:border-outline/60"
+                                }`}
+                              >
+                                <span className="material-symbols-outlined text-[22px] mt-[2px] shrink-0">autorenew</span>
+                                <div className="text-left">
+                                  <p className="font-bold text-sm">Enable Auto-pay</p>
+                                  <p className="text-xs opacity-60">Approve the smart account once — contributions are paid automatically every month</p>
+                                </div>
+                              </button>
+                            </div>
+
+                            <div className="flex gap-sm">
+                              <button
+                                onClick={() => setShowPayModal(false)}
+                                className="flex-1 border border-outline/30 text-on-surface py-sm rounded-lg font-medium text-sm hover:bg-outline/10 transition-all"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                onClick={payMode === "once" ? handlePayOnce : handleSetupAutoPay}
+                                className="flex-1 bg-secondary text-on-secondary py-sm rounded-lg font-bold text-sm hover:brightness-110 transition-all"
+                              >
+                                {payMode === "once" ? "Pay Now" : "Set Up Auto-pay"}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
                       )}
                       <Link
                         href={`/claims/new?pool=${poolAddress}`}
