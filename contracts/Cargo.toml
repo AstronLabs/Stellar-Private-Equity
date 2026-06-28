@@ -4,7 +4,7 @@ members = [
     "fund",
     "capital_call",
     "milestone_disbursement",
-    # "distribution",
+    "distribution",
     # "secondary_market",
 ]
 
