@@ -2,7 +2,7 @@
 resolver = "2"
 members = [
     "fund",
-    # "capital_call",
+    "capital_call",
     # "milestone_disbursement",
     # "distribution",
     # "secondary_market",
