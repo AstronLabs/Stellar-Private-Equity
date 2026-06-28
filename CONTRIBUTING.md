@@ -1,6 +1,6 @@
-# Contributing to Stellar Private Equity Platform
+# Contributing to Stellar Private Equity Protocol
 
-Thank you for your interest in contributing to the Stellar Private Equity Platform! We welcome contributions from developers, designers, security auditors, and community members. 
+Thank you for your interest in contributing to the Stellar Private Equity Protocol! We welcome contributions from developers, designers, security auditors, and community members. 
 
 By participating in this project, you help build a more transparent, compliant, and automated private equity fund management protocol on the Stellar network.
 
@@ -49,7 +49,7 @@ Have an idea for a new feature, a custom drawdown pattern, or an improved second
 ## 3. Local Development Setup
 
 ### Prerequisites
-To build and run the Stellar Private Equity Platform, you need:
+To build and run the Stellar Private Equity Protocol, you need:
 *   **Node.js** (v20.0.0 or higher) and `npm`.
 *   **Rust** (latest stable version).
 *   **WASM Target**: Add the WebAssembly target via:

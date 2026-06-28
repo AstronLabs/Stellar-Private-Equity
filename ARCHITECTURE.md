@@ -1,4 +1,4 @@
-# Architecture: Private Equity Platform on Stellar
+# Architecture: Private Equity Protocol on Stellar
 
 ## Core Principle: Separate Compliance from Settlement
 
@@ -14,7 +14,7 @@ The architecture splits into two layers: a **Compliance Layer** that establishes
 
 **Wallet authorization**: Once approved, the investor's Stellar wallet address is whitelisted by the GP signing an authorization on the LP token account — enforcing at the token level that only KYC-cleared wallets can hold or receive LP tokens.
 
-**Output**: An approved investor record stored in the platform database, with the Stellar wallet trustline authorized. A hash of the KYC approval can be anchored on Stellar for auditability, without sensitive identity data living on-chain.
+**Output**: An approved investor record stored in the protocol database, with the Stellar wallet trustline authorized. A hash of the KYC approval can be anchored on Stellar for auditability, without sensitive identity data living on-chain.
 
 ---
 

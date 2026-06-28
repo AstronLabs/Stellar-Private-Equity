@@ -1,14 +1,14 @@
-# Stellar Private Equity Platform
-A decentralized, compliant, and automated private equity fund management suite built on Stellar.
+# Stellar Private Equity 
+A decentralized, compliant, and automated private equity fund management protocol built on Stellar.
 
-The Stellar Private Equity Platform streamlines the lifecycle of private equity funds—from whitelisting and capital commitments to drawdowns, milestone-based disbursements, pro-rata returns distributions, and secondary market liquidity. By utilizing Soroban smart contracts, USDC escrows, token-weighted milestone voting, and compliant secondary trading, it replaces slow, paper-based fund administration with a transparent, on-chain alternative.
+The Stellar Private Equity Protocol streamlines the lifecycle of private equity funds—from whitelisting and capital commitments to drawdowns, milestone-based disbursements, pro-rata returns distributions, and secondary market liquidity. By utilizing Soroban smart contracts, USDC escrows, token-weighted milestone voting, and compliant secondary trading, it replaces slow, paper-based fund administration with a transparent, on-chain alternative.
 
 It's the bridge between institutional private equity compliance and blockchain efficiency.
 
 ## Motivation
 Traditional private equity is plagued by high operational overhead, slow manual capital calls, paper-based compliance checks, and a complete lack of secondary liquidity for Limited Partners (LPs). Deals are slow to close, and capital remains locked up for years with minimal transparency.
 
-Stellar Private Equity Platform makes fund management efficient and liquid:
+Stellar Private Equity Protocol makes fund management efficient and liquid:
 
 *   **Automate Compliance:** Enforce investor whitelisting on-chain. Only verified, whitelisted investors can commit capital, receive distributions, or buy LP tokens.
 *   **Streamline Capital Calls:** Escrow LP contributions securely and trigger atomic LP token minting as soon as the drawdown is funded, eliminating manual reconciliation.
@@ -74,8 +74,8 @@ cargo build --target wasm32-unknown-unknown --release
 cargo test
 ```
 
-## How the Private Equity Platform Works
-The platform coordinates the entire fund lifecycle on-chain through five phases:
+## How the Private Equity Protocol Works
+The protocol coordinates the entire fund lifecycle on-chain through five phases:
 
 1.  **Whitelisting:** The General Partner (GP) whitelists approved investors on the Fund contract after KYC verification.
 2.  **Commitment & Capital Call:** The GP issues a capital call. Whitelisted LPs deposit USDC into the capital call escrow contract.
