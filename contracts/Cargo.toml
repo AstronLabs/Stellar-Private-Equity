@@ -5,7 +5,7 @@ members = [
     "capital_call",
     "milestone_disbursement",
     "distribution",
-    # "secondary_market",
+    "secondary_market",
 ]
 
 [workspace.dependencies]
