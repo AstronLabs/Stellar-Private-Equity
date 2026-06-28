@@ -820,20 +820,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f8ca58f447f06ed17d5fc4043ce1b10dd205e060fb3ce5b979b8ed8e59ff3f79"
 
 [[package]]
-name = "nexusguard-factory"
-version = "0.1.0"
-dependencies = [
- "soroban-sdk",
-]
-
-[[package]]
-name = "nexusguard-pool"
-version = "0.1.0"
-dependencies = [
- "soroban-sdk",
-]
-
-[[package]]
 name = "num-bigint"
 version = "0.4.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -903,6 +889,45 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 
 [[package]]
+name = "pe-capital-call"
+version = "0.1.0"
+dependencies = [
+ "pe-fund",
+ "soroban-sdk",
+]
+
+[[package]]
+name = "pe-distribution"
+version = "0.1.0"
+dependencies = [
+ "pe-fund",
+ "soroban-sdk",
+]
+
+[[package]]
+name = "pe-fund"
+version = "0.1.0"
+dependencies = [
+ "soroban-sdk",
+]
+
+[[package]]
+name = "pe-milestone-disbursement"
+version = "0.1.0"
+dependencies = [
+ "pe-fund",
+ "soroban-sdk",
+]
+
+[[package]]
+name = "pe-secondary-market"
+version = "0.1.0"
+dependencies = [
+ "pe-fund",
+ "soroban-sdk",
+]
+
+[[package]]
 name = "pin-project-lite"
 version = "0.2.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -916,13 +941,6 @@ checksum = "f950b2377845cebe5cf8b5165cb3cc1a5e0fa5cfa3e1f7f55707d8fd82e0a7b7"
 dependencies = [
  "der",
  "spki",
-]
-
-[[package]]
-name = "poolsafe-smart-account"
-version = "0.1.0"
-dependencies = [
- "soroban-sdk",
 ]
 
 [[package]]

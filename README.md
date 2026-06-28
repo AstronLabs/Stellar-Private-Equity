@@ -1,112 +1,97 @@
-# NexusGuard
-A decentralized peer-to-peer microinsurance protocol built on Stellar.
+# Stellar Private Equity Platform
+A decentralized, compliant, and automated private equity fund management suite built on Stellar.
 
-NexusGuard enables communities to create transparent, self-governed protection pools for everyday risks. By utilizing Soroban smart contracts, on-chain voting, automated USDC contributions, and programmable smart accounts, it replaces expensive and opaque traditional insurance models with a trustless, P2P alternative.
+The Stellar Private Equity Platform streamlines the lifecycle of private equity funds—from whitelisting and capital commitments to drawdowns, milestone-based disbursements, pro-rata returns distributions, and secondary market liquidity. By utilizing Soroban smart contracts, USDC escrows, token-weighted milestone voting, and compliant secondary trading, it replaces slow, paper-based fund administration with a transparent, on-chain alternative.
 
-It's the Skyscanner equivalent for community-driven microinsurance risk-sharing.
-
-**Live Demo:** [nexusguard-pi.vercel.app](https://nexusguard-pi.vercel.app)
-
----
-
-## Screenshots
-
-### Landing Page & Live Statistics
-![Landing Page Screenshot](docs/screenshot.png)
----
+It's the bridge between institutional private equity compliance and blockchain efficiency.
 
 ## Motivation
-Traditional insurance in emerging markets is expensive, slow, and heavily centralized, which often erodes trust entirely. When people face everyday shocks—a cracked phone screen, a medical bill, or a stolen laptop—they are left with no financial fallback.
+Traditional private equity is plagued by high operational overhead, slow manual capital calls, paper-based compliance checks, and a complete lack of secondary liquidity for Limited Partners (LPs). Deals are slow to close, and capital remains locked up for years with minimal transparency.
 
-NexusGuard makes risk protection legible and accessible:
-*   **Form a Pool**: Set a contribution size, member cap, and risk category.
-*   **Participate Democratically**: A randomly selected 30% of members serve as signers to review and vote on claims with a 60% quorum.
-*   **Pay Automatically**: Leverage Soroban smart accounts for hands-free monthly auto-pay, while the x402 protocol gates off-chain resources (like IPFS uploads) with micro-fees.
+Stellar Private Equity Platform makes fund management efficient and liquid:
 
----
+*   **Automate Compliance:** Enforce investor whitelisting on-chain. Only verified, whitelisted investors can commit capital, receive distributions, or buy LP tokens.
+*   **Streamline Capital Calls:** Escrow LP contributions securely and trigger atomic LP token minting as soon as the drawdown is funded, eliminating manual reconciliation.
+*   **Govern Disbursements:** Empower LPs with token-weighted voting on portfolio milestones before capital is released to portfolio companies.
+*   **Inject Secondary Liquidity:** Enable LPs to trade their fund shares peer-to-peer via atomic swaps, while maintaining absolute compliance gating.
 
 ## Features
-*   **Cover Pools** — Create pools for Health, Crop, Property, Vehicle, Travel, Business, or other risk types.
-*   **Smart Account Auto-Pay** — One-time Freighter approval allows smart accounts to execute recurring monthly USDC contributions automatically.
-*   **IPFS Evidence Verification** — Claim evidence (photos, receipts) is securely pinned to IPFS via Pinata.
-*   **x402 Micropayment Gating** — API routes for file uploading are gated by a one-time micropayment (0.005 USDC) to prevent spam without user accounts.
-*   **On-chain Governance** — 30% random member assignment for signer voting with automatic payouts on approved claims.
-*   **Treasury Payout Caps** — Built-in guardrails (max 10% per claim, max 25% monthly) protect the pool's solvency.
-*   **Signer Rotation** — Reviewers are rotated every 60 days via on-chain pseudo-random selection.
-
----
+*   **Fund Governance Contract** — Manages fund lifecycle stages, investor whitelisting, and LP token minting/clawbacks via the Stellar Asset Contract (SAC).
+*   **Capital Call Escrow Contract** — Escrows USDC contributions during drawdowns, handles automatic LP token minting on success, and manages refunds on cancellation.
+*   **Milestone Disbursement Contract** — Milestone-based voting where LPs use their LP token balances as voting weight to approve or reject USDC payouts to portfolio companies.
+*   **Distribution Contract** — Snapshots LP token supply and automates pro-rata USDC yield distributions to LPs.
+*   **Secondary Market Contract** — Facilitates atomic, compliant swaps of LP tokens for USDC, enforcing that the buyer is whitelisted on the Fund contract.
+*   **Stablecoin Settlement** — All contributions, payouts, and trades settle in USDC on Stellar with sub-cent fees and 3–5 second finality.
 
 ## Stack
-*   **Frontend**: Next.js 14, TypeScript, TailwindCSS
-*   **Wallet**: Freighter + `@stellar/freighter-api`
-*   **Smart Contracts**: Rust, Soroban SDK v22
-*   **Backend APIs**: Next.js Serverless API routes
-*   **Storage**: IPFS via Pinata API
-
----
+*   **Frontend:** Next.js, TypeScript, Vanilla CSS Modules
+*   **Wallet:** Freighter + `@stellar/freighter-api`
+*   **Smart Contracts:** Rust, Soroban SDK v22
+*   **Backend:** Node.js, Express, TypeScript, Stellar SDK (`@stellar/stellar-sdk` v13)
+*   **Database:** In-memory / mock database (for KYC records)
 
 ## Running it locally
 
+You can run and build the entire full-stack application (smart contracts, frontend, and backend) from the root directory of the project.
+
 ### Prerequisites
-*   **Node.js** ≥ 20.0.0
-*   **Rust** (latest stable) + `wasm32-unknown-unknown` target
-*   **Stellar CLI** — `cargo install stellar-cli`
-*   **Freighter Wallet** browser extension
+*   Node.js ≥ 20.0.0
+*   Rust (latest stable) + `wasm32-unknown-unknown` target
+*   Stellar CLI — `cargo install stellar-cli`
+*   [Freighter Wallet](https://www.freighter.app/) browser extension
 
-### 1. Setup Frontend
+### 1. Setup Frontend & Backend
+Install dependencies for both folders:
 ```bash
-cd frontend
-npm install
+npm --prefix frontend install
+npm --prefix backend install
 ```
 
-Configure `frontend/.env.local`:
+Configure `backend/.env` (use `backend/.env.example` as a template):
 ```env
-NEXT_PUBLIC_FACTORY_CONTRACT_ID=CAWXDSZM52E5BW7G6TFX7DTXSHF7F75TUSSWW7B442NBEU3CADXNVTXH
-NEXT_PUBLIC_USDC_TOKEN_ID=CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA
-NEXT_PUBLIC_DEPLOYER_ADDRESS=GALK2FN3QXLETSVMUEVWR4IE2FYEFEMWZR2QXU5EU6APVJVATFLS7HON
-NEXT_PUBLIC_SMART_ACCOUNT_CONTRACT_ID=CCERWUE35WN7M4PN6XYK7CDCJZX35TC53TFATJNBRA6I3FDS3RVS65YF
-PINATA_API_KEY=your_pinata_api_key
-PINATA_SECRET_API_KEY=your_pinata_secret
-X402_RECEIVER_ADDRESS=GALK2FN3QXLETSVMUEVWR4IE2FYEFEMWZR2QXU5EU6APVJVATFLS7HON
+PORT=4000
+STELLAR_NETWORK=testnet
+STELLAR_RPC_URL=https://soroban-testnet.stellar.org
+FUND_CONTRACT_ID=your_deployed_fund_contract_id
+GP_SECRET_KEY=your_gp_secret_key
 ```
 
-Run the dev server:
+### 2. Run the Application
+Start the development servers from the root directory:
 ```bash
-npm run dev
+# Start the Next.js frontend (http://localhost:3000)
+npm run frontend:dev
+
+# Start the Express backend (http://localhost:4000)
+npm run backend:dev
 ```
 
-### 2. Setup Contracts (Optional)
-To build and redeploy the smart contracts:
+### 3. Build & Test Contracts
+To build and test the Soroban smart contracts:
 ```bash
 cd contracts
 cargo build --target wasm32-unknown-unknown --release
-# Deploy to Testnet
-bash scripts/deploy-pool-testnet.sh
+cargo test
 ```
 
----
+## How the Private Equity Platform Works
+The platform coordinates the entire fund lifecycle on-chain through five phases:
 
-## How P2P Microinsurance works
-NexusGuard coordinates risk coverage completely on-chain through three phases:
-*   **Formation**: The creator initializes a pool and pays the first contribution. Members join by paying a fixed contribution until a minimum threshold (15) is met.
-*   **Active**: Once active, a 60-day waiting period is enforced before claims can be submitted. Members pay their USDC contributions monthly (by the 8th of each month). If a contribution is missed, a 7-day grace period is granted before they can be removed.
-*   **Closed**: After the pool's duration (typically 1 year), the pool creator liquidates the contract, splitting the remaining treasury balance equally among all active, non-defaulting members.
-
----
+1.  **Whitelisting:** The General Partner (GP) whitelists approved investors on the Fund contract after KYC verification.
+2.  **Commitment & Capital Call:** The GP issues a capital call. Whitelisted LPs deposit USDC into the capital call escrow contract.
+3.  **Drawdown:** Once the call is fully subscribed, the GP draws down the USDC to their treasury, and LP tokens are automatically minted to the LPs.
+4.  **Milestone Voting:** The GP proposes a disbursement to a portfolio company. LPs vote on the milestone using their LP tokens. If approved, USDC is released to the portfolio company.
+5.  **Distribution & Secondary Trade:** Portfolio exits are deposited by the GP and distributed pro-rata. LPs can also list their LP tokens on the secondary market for atomic, compliant sales to other whitelisted LPs.
 
 ## Roadmap
-*   **Dynamic Payout Adjustments**: Automatically adjust contribution sizes or payout caps based on historical claim frequency.
-*   **Automated Grace Period Removals**: Trigger defaulter removals automatically via cron jobs calling the smart account's scheduled transfers.
-*   **Soroban AMM Liquidity Farming**: Earn yield on pool reserves by routing idle USDC treasury balances into Soroban AMM pools (e.g. Soroswap) to grow the cover pool's overall depth.
-*   **DAO Governance Upgrades**: Enable member proposals to change contract-level parameters (e.g. default 60-day waiting period or signer percentage) via voting.
-
----
+*   **Automated KYC Oracle Integration:** Connect the backend to identity verification services to automate the whitelisting trigger.
+*   **Yield-Bearing Treasuries:** Integrate idle capital call or distribution escrows with Soroban-based lending protocols (e.g. Blend) to earn yield.
+*   **Dynamic Voting Quorums:** Allow the fund setup to customize voting thresholds and quorums based on the fund size or asset class.
+*   **Historical Event Indexer:** Set up a Mercury or custom indexer to cache and query historical secondary market trades and milestone votes.
 
 ## Documentation
-*   **[Technical Documentation](docs/documentation.md)**: Architecture, data flow, component breakdown, and how everything fits together.
-*   **[Contributing Guide](docs/CONTRIBUTING.md)**: How to set up locally, branch conventions, PR guidelines, and ways to contribute.
-
----
+*   [Architecture](ARCHITECTURE.md): Core design principles, contract interactions, and system architecture.
+*   [Contributing Guide](CONTRIBUTING.md): Code formatting, branching style, and pull request guidelines.
 
 ## License
 MIT
